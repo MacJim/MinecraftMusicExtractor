@@ -1,0 +1,13 @@
+{
+    "cSpell.words": [
+        "fileno",
+        "getch",
+        "getenv",
+        "isdir",
+        "msvcrt",
+        "tcgetattr",
+        "tcsadrain",
+        "tcsetattr",
+        "termios"
+    ]
+}
