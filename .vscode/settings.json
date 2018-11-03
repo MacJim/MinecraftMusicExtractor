@@ -4,6 +4,7 @@
         "getch",
         "getenv",
         "isdir",
+        "isfile",
         "msvcrt",
         "tcgetattr",
         "tcsadrain",
