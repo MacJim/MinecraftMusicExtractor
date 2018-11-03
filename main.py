@@ -3,6 +3,7 @@ import os
 import sys
 import distutils.version
 import json
+import shutil
 
 import config
 
@@ -121,19 +122,97 @@ if (not os.path.isfile(assetsIndexFilePath)):
 # 5. Open assets index json file.
 with open(assetsIndexFilePath) as assetsIndexFileData:
     assetsIndex = json.load(assetsIndexFileData)
+    assetsIndex = assetsIndex["objects"]    # Don't forget this top-layered "object" key.
 
 
 # MARK: Main program
-print("1. Extract music only.")
-print("2. Extract sound effects only.")
-print("3. Extract music & sound effects.")
+# 1. Get user input.
+print("\n1. Extract music only.")
+print("2. Extract music & sound effects.")
 print("0. Exit")
 print("Press a key to select an option above.")
 
 while(True):
     # Wait for a legal user input.
     userInput = getch()
-    if ((userInput == "0") or (userInput == "1") or (userInput == "2") or (userInput == "3")):
+    if (userInput == "0"):
+        exit(0)
+    elif ((userInput == "1") or (userInput == "2")):
         break
     else:
         continue
+
+# 2. Filter items to export.
+crudeAssetsInformation = {}
+if (userInput == "1"):
+    for aKey, aValue in assetsIndex.items():
+        if (aKey.startswith("minecraft/sounds/music/")):
+            crudeAssetsInformation[aKey] = aValue
+elif (userInput == "2"):
+    for aKey, aValue in assetsIndex.items():
+        if (aKey.startswith("minecraft/sounds/")):
+            crudeAssetsInformation[aKey] = aValue
+
+# 3. Calculate hashed path and export path.
+processedAssetsInformation = []
+for aKey, aValue in crudeAssetsInformation.items():
+    assetExportPath = os.path.join(exportFolderPath, aKey)
+
+    assetHashedName = aValue["hash"]
+    assetHashedFolder = assetHashedName[0:2]
+    assetHashedPath = os.path.join(objectsFolderPath, assetHashedFolder, assetHashedName)
+
+    processedAssetsInformation.append({
+        "exportPath": assetExportPath,
+        "hashedPath": assetHashedPath
+    })
+
+# 4. Copy files
+successfulCopies = []
+# An IOError happened on this file. This might be caused by insufficient permission.
+failedCopies = []
+# A file or directory exists at the export path.
+omittedCopies = []
+
+for aFileToCopy in processedAssetsInformation:
+    exportPath = aFileToCopy["exportPath"]
+    hashedPath = aFileToCopy["hashedPath"]
+
+    # 4-1. If a directory (not file) exists at `exportPath`, abort.
+    if (os.path.isdir(exportPath)):
+        omittedCopies.append(aFileToCopy)
+        continue
+
+    # 4-2. Copy files.
+    if ((not os.path.isfile(exportPath)) or (config.shouldOverrideExistingFile)):
+        try:
+            # 4-3. Create the export directory if it does not exist.
+            if (not os.path.isdir(os.path.dirname(exportPath))):
+                os.makedirs(os.path.dirname(exportPath))
+
+            shutil.copyfile(hashedPath, exportPath)
+            successfulCopies.append(aFileToCopy)
+        except:
+            failedCopies.append(aFileToCopy)
+    else:
+        omittedCopies.append(aFileToCopy)
+
+# 5. Show summary.
+print("\nCopy summary:")
+print("Successful copies:", len(successfulCopies))
+print("Failed copies:", len(failedCopies))
+print("Omitted copies:", len(omittedCopies))
+
+if (len(failedCopies) > 0):
+    print("Errors occurred when copying certain files.")
+    print("This might be caused by insufficient file permissions.")
+    print("Press any key to view them.")
+
+    sys.stdout.flush()
+    getch()
+
+    print("Failed copies:")
+    for i in range(len(failedCopies)):
+        print(i)
+        print("Source:", failedCopies[i]["hashedPath"])
+        print("Destination:", failedCopies[i]["exportPath"])

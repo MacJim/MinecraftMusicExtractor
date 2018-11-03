@@ -1,3 +1,9 @@
+# Copied music files
+minecraft/
+
+# Reference file (useless).
+1.13.1 (formatted).json
+
 # "Old" files
 *.old*
 

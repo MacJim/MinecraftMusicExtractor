@@ -6,6 +6,7 @@
         "isdir",
         "isfile",
         "msvcrt",
+        "shutil",
         "tcgetattr",
         "tcsadrain",
         "tcsetattr",
