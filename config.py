@@ -14,7 +14,7 @@ exportFolderPath = None
 # 3. Overwrite existing files when exporting.
 # If `True`, this script will overwrite files at the destination folder.
 # Note: This script will NOT overwrite directories regardless of this value.
-shouldOverrideExistingFiles = False
+shouldOverwriteExistingFiles = False
 
 
 # 4. Minecraft assets index version.
