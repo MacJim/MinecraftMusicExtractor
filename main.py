@@ -184,7 +184,7 @@ for aFileToCopy in processedAssetsInformation:
         continue
 
     # 4-2. Copy files.
-    if ((not os.path.isfile(exportPath)) or (config.shouldOverrideExistingFile)):
+    if ((not os.path.isfile(exportPath)) or (config.shouldOverrideExistingFiles)):
         try:
             # 4-3. Create the export directory if it does not exist.
             if (not os.path.isdir(os.path.dirname(exportPath))):
