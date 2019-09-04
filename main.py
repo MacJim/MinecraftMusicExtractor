@@ -106,7 +106,7 @@ if ((assetsIndexVersion is None) or (assetsIndexVersion == "")):
         print("Please run Minecraft at least once before running this script!")
         exit(1)
     else:
-        assetsIndexVersion = allVersions[1]
+        assetsIndexVersion = allVersions[0]
         for currentVersion in allVersions:
             if (distutils.version.LooseVersion(assetsIndexVersion) < distutils.version.LooseVersion(currentVersion)):
                 assetsIndexVersion = currentVersion
