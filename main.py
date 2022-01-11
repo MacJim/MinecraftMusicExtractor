@@ -50,8 +50,8 @@ minecraft_folder_path = config.minecraft_folder_path
 indexes_folder_path = ""
 objects_folder_path = ""
 
+# 2-1. Find default ".minecraft" folder path.
 if not minecraft_folder_path:
-    # 2-1. Find default ".minecraft" folder path.
     if os_platform == "Windows":
         appdata_path = os.getenv("APPDATA")
         minecraft_folder_path = os.path.join(appdata_path, ".minecraft")
@@ -64,20 +64,20 @@ if not minecraft_folder_path:
 
 # 2-2. Check that the default ".minecraft" folder and its "assets/indexes" & "assets/objects" sub-folders exist.
 if os.path.isdir(minecraft_folder_path):
-    print("Minecraft folder found:", minecraft_folder_path)
+    print(f"Minecraft folder: {minecraft_folder_path}")
 
     indexes_folder_path = os.path.join(minecraft_folder_path, "assets/indexes")
     objects_folder_path = os.path.join(minecraft_folder_path, "assets/objects")
 
     if os.path.isdir(indexes_folder_path):
-        print("Indexes folder found:", indexes_folder_path)
+        print(f"Indexes folder: {indexes_folder_path}")
     else:
         print("Indexes folder not found!")
         print("Please run Minecraft at least once before running this script!")
         exit(1)
 
     if os.path.isdir(objects_folder_path):
-        print("Objects folder found:", objects_folder_path)
+        print(f"Objects folder: {objects_folder_path}")
     else:
         print("Objects folder not found!")
         print("Please run Minecraft at least once before running this script!")
@@ -112,18 +112,18 @@ if not assets_index_version:
         for current_version in all_versions:
             if distutils.version.LooseVersion(assets_index_version) < distutils.version.LooseVersion(current_version):
                 assets_index_version = current_version
-        print("Latest assets index found:", assets_index_version)
+        print(f"Latest assets index: {assets_index_version}")
 
 # 4-2. Make sure that the index file exists.
 assets_index_file_path = os.path.join(indexes_folder_path, assets_index_version + ".json")
 if not os.path.isfile(assets_index_file_path):
-    print("Cannot open asset index file:", assets_index_file_path)
+    print(f"Cannot open asset index file: {assets_index_file_path}")
     print("Please enter its path manually in \"config.py\".")
     exit(1)
 
 # 5. Open assets index json file.
-with open(assets_index_file_path) as assetsIndexFileData:
-    assets_index = json.load(assetsIndexFileData)
+with open(assets_index_file_path) as f:
+    assets_index = json.load(f)
     assets_index = assets_index["objects"]    # Don't forget this top-layered "object" key.
 
 
@@ -145,17 +145,12 @@ while True:
         continue
 
 # 2. Filter items to export.
-crude_assets_information = {}
 if user_input == "1":
-    for k, v in assets_index.items():
-        if k.startswith("minecraft/sounds/music/"):
-            crude_assets_information[k] = v
+    crude_assets_information = {k: v for k, v in assets_index.items() if k.startswith("minecraft/sounds/music/")}
 elif user_input == "2":
-    for k, v in assets_index.items():
-        if k.startswith("minecraft/sounds/"):
-            crude_assets_information[k] = v
+    crude_assets_information = {k: v for k, v in assets_index.items() if k.startswith("minecraft/sounds/")}
 
-# 3. Calculate hashed path and export path.
+# 3. Calculate hashed paths and export paths.
 processed_assets_information = []
 for k, v in crude_assets_information.items():
     asset_export_path = os.path.join(export_folder_path, k)
@@ -176,13 +171,13 @@ failed_copies = []
 # A file or directory exists at the export path.
 omitted_copies = []
 
-for a_file_to_copy in processed_assets_information:
-    export_path = a_file_to_copy["exportPath"]
-    hashed_path = a_file_to_copy["hashedPath"]
+for file_info in processed_assets_information:
+    export_path = file_info["exportPath"]
+    hashed_path = file_info["hashedPath"]
 
     # 4-1. If a directory (not file) exists at `exportPath`, abort.
     if os.path.isdir(export_path):
-        omitted_copies.append(a_file_to_copy)
+        omitted_copies.append(file_info)
         continue
 
     # 4-2. Copy files.
@@ -193,24 +188,19 @@ for a_file_to_copy in processed_assets_information:
                 os.makedirs(os.path.dirname(export_path))
 
             shutil.copyfile(hashed_path, export_path)
-            successful_copies.append(a_file_to_copy)
+            successful_copies.append(file_info)
         except:
-            failed_copies.append(a_file_to_copy)
+            failed_copies.append(file_info)
     else:
-        omitted_copies.append(a_file_to_copy)
+        omitted_copies.append(file_info)
 
 # 5. Show summary.
 print("\nCopy summary:")
-print("Successful copies:", len(successful_copies))
-print("Failed copies:", len(failed_copies))
-print("Omitted copies:", len(omitted_copies))
+print(f"Successful copies: {len(successful_copies)}")
+print(f"Failed copies: {len(failed_copies)}")
+print(f"Omitted copies: {len(omitted_copies)}")
 
 if failed_copies:
-    print("Errors occurred when copying certain files.")
-    print("This might be caused by insufficient file permissions.")
-
-    print("Failed copies:")
-    for i in range(len(failed_copies)):
-        print(i)
-        print("Source:", failed_copies[i]["hashedPath"])
-        print("Destination:", failed_copies[i]["exportPath"])
+    print("Errors occurred when copying files:")
+    for i, failed_copy in enumerate(failed_copies):
+        print(f"{i + 1}. Source: {failed_copy['hashedPath']}, Destination: {failed_copy['exportPath']}")
