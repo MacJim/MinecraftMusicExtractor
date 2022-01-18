@@ -1,7 +1,7 @@
-import platform
-import os
 import distutils.version
 import json
+import os
+import platform
 import shutil
 
 import config
@@ -20,8 +20,8 @@ def getch():
     except ModuleNotFoundError:
         # Works on UNIX.
         import sys
-        import tty
         import termios
+        import tty
 
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
