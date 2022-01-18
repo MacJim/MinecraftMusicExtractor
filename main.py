@@ -15,6 +15,7 @@ def getch():
     try:
         # Only works on Windows.
         import msvcrt
+
         return msvcrt.getch().decode("ASCII")
 
     except ModuleNotFoundError:
@@ -43,7 +44,7 @@ print("Please run Minecraft at least once before running this script.\n")
 
 # MARK: Preparations.
 # 1. Get system platform.
-os_platform = platform.system()    # Linux, Darwin or Windows
+os_platform = platform.system()  # Linux, Darwin or Windows
 
 # 2. Obtain ".minecraft" folder path.
 minecraft_folder_path = config.minecraft_folder_path
@@ -58,7 +59,9 @@ if not minecraft_folder_path:
     else:
         home_directory_path = os.path.expanduser("~")
         if os_platform == "Darwin":
-            minecraft_folder_path = os.path.join(home_directory_path, "Library/Application Support/minecraft")    # No dot on macOS.
+            minecraft_folder_path = os.path.join(
+                home_directory_path, "Library/Application Support/minecraft"
+            )  # No dot on macOS.
         elif os_platform == "Linux":
             minecraft_folder_path = os.path.join(home_directory_path, ".minecraft")
 
@@ -84,7 +87,7 @@ if os.path.isdir(minecraft_folder_path):
         exit(1)
 
 else:
-    print("Minecraft game folder not found, please enter its path manually in \"config.py\".")
+    print('Minecraft game folder not found, please enter its path manually in "config.py".')
     exit(1)
 
 # 3. Obtain export folder path.
@@ -118,13 +121,13 @@ if not assets_index_version:
 assets_index_file_path = os.path.join(indexes_folder_path, assets_index_version + ".json")
 if not os.path.isfile(assets_index_file_path):
     print(f"Cannot open asset index file: {assets_index_file_path}")
-    print("Please enter its path manually in \"config.py\".")
+    print('Please enter its path manually in "config.py".')
     exit(1)
 
 # 5. Open assets index json file.
 with open(assets_index_file_path) as f:
     assets_index = json.load(f)
-    assets_index = assets_index["objects"]    # Don't forget this top-layered "object" key.
+    assets_index = assets_index["objects"]  # Don't forget this top-layered "object" key.
 
 
 # MARK: Main program
@@ -159,10 +162,7 @@ for k, v in crude_assets_information.items():
     asset_hashed_folder = asset_hashed_name[0:2]
     asset_hashed_path = os.path.join(objects_folder_path, asset_hashed_folder, asset_hashed_name)
 
-    processed_assets_information.append({
-        "exportPath": asset_export_path,
-        "hashedPath": asset_hashed_path
-    })
+    processed_assets_information.append({"exportPath": asset_export_path, "hashedPath": asset_hashed_path})
 
 # 4. Copy files
 successful_copies = []
